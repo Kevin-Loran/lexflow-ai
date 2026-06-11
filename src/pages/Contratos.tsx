@@ -4,14 +4,6 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { Search, Filter, X, Plus, Trash2 } from 'lucide-react'
 
-function formatarData(valor: string | null | undefined) {
-  if (!valor) return '—'
-  // Supabase retorna datas como "2025-12-31" — parseamos manualmente para evitar Invalid Date
-  const match = valor.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!match) return '—'
-  return `${match[3]}/${match[2]}/${match[1]}`
-}
-
 function normalizar(valor: string | null | undefined) {
   return (valor || '').toLowerCase().trim()
 }
