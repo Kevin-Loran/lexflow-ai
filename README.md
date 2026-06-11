@@ -1,73 +1,34 @@
-# React + TypeScript + Vite
+# LexFlow AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+LexFlow AI é uma plataforma SaaS jurídica para advogados gerenciarem contratos de forma inteligente. O sistema lê PDFs automaticamente via n8n e OpenAI, extrai as informações relevantes e organiza tudo em um dashboard limpo e funcional.
 
-Currently, two official plugins are available:
+## O que o sistema faz
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Quando um contrato em PDF chega pelo Google Drive, o n8n detecta o arquivo, extrai o texto, envia para análise de IA e salva os dados estruturados no Supabase. A partir daí o advogado consegue visualizar todos os contratos, ver quais estão vencendo, filtrar por categoria, status e prioridade, e acessar o detalhe completo de cada um.
 
-## React Compiler
+Também é possível fazer upload manual de contratos pelo próprio dashboard, criar contratos do zero pelo formulário, editar qualquer campo e excluir registros.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tecnologias
 
-## Expanding the ESLint configuration
+O frontend foi construído com React, TypeScript, Vite e Tailwind CSS v4. O banco de dados e autenticação são feitos com Supabase. A automação de leitura de contratos roda no n8n conectado ao OpenAI.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Como rodar localmente
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Instale as dependências e suba o servidor de desenvolvimento:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+O projeto vai rodar em `http://localhost:5173`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Estrutura das páginas
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Dashboard** com cards de resumo e gráficos de status e prioridade
+- **Contratos** com tabela, filtros e busca
+- **Detalhes do contrato** com todas as informações extraídas pela IA
+- **Formulário** para criar e editar contratos manualmente
+- **Upload Manual** para enviar PDFs sem passar pelo Google Drive
+- **Email Profissional** para configurar a leitura de caixa de entrada
+- **Como Funciona** explicando o fluxo completo da plataforma
