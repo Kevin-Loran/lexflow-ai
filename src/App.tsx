@@ -14,7 +14,7 @@ import { ComoFunciona } from './pages/ComoFunciona'
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/lexflow-ai">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
