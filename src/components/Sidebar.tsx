@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, FileText, Mail, Upload, HelpCircle, LogOut, Scale
+  LayoutDashboard, FileText, Mail, Upload, HelpCircle, LogOut, Scale, X
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -12,7 +12,12 @@ const navItems = [
   { to: '/como-funciona', icon: HelpCircle, label: 'Como Funciona' },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { signOut, user } = useAuth()
   const navigate = useNavigate()
 
@@ -22,16 +27,29 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-64 min-h-screen bg-slate-900 flex flex-col shrink-0">
+    <aside className={`
+      w-64 min-h-screen bg-slate-900 flex flex-col shrink-0
+      fixed lg:relative inset-y-0 left-0 z-30
+      transition-transform duration-300
+      ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+    `}>
       <div className="p-6 border-b border-slate-700">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-500 rounded-lg flex items-center justify-center">
-            <Scale className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-blue-500 rounded-lg flex items-center justify-center">
+              <Scale className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-white font-bold text-lg leading-none">LexFlow</h1>
+              <span className="text-blue-400 text-xs">AI Jurídico</span>
+            </div>
           </div>
-          <div>
-            <h1 className="text-white font-bold text-lg leading-none">LexFlow</h1>
-            <span className="text-blue-400 text-xs">AI Jurídico</span>
-          </div>
+          <button
+            onClick={onClose}
+            className="lg:hidden text-slate-400 hover:text-white p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -40,6 +58,7 @@ export function Sidebar() {
           <NavLink
             key={to}
             to={to}
+            onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                 isActive

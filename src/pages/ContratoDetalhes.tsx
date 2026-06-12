@@ -107,7 +107,7 @@ export function ContratoDetalhes() {
   }
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-6 transition-colors"
@@ -116,7 +116,7 @@ export function ContratoDetalhes() {
         Voltar
       </button>
 
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">
             {contrato.titulo_contrato || contrato.nome_arquivo || 'Contrato'}
@@ -138,7 +138,7 @@ export function ContratoDetalhes() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {contrato.arquivo_url && (
             <a
               href={contrato.arquivo_url}
@@ -182,7 +182,7 @@ export function ContratoDetalhes() {
           <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
             <FileText className="w-4 h-4" /> Informações Gerais
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Campo label="Tipo de Documento" value={contrato.tipo_documento} />
             <Campo label="Categoria" value={contrato.categoria} />
             <Campo label="Origem" value={contrato.origem_documento} />
@@ -195,7 +195,7 @@ export function ContratoDetalhes() {
           <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
             <Calendar className="w-4 h-4" /> Datas
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Campo label="Data de Assinatura" value={formatarData(contrato.data_assinatura)} />
             <Campo label="Início de Vigência" value={formatarData(contrato.data_inicio_vigencia)} />
             <Campo label="Fim de Vigência" value={formatarData(contrato.data_fim_vigencia)} />
@@ -206,7 +206,7 @@ export function ContratoDetalhes() {
           <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
             <DollarSign className="w-4 h-4" /> Valores
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Campo label="Valor Total" value={contrato.valor_total} />
             <Campo label="Valor Mensal" value={contrato.valor_mensal} />
             <Campo label="Forma de Pagamento" value={contrato.forma_pagamento} />
@@ -218,7 +218,7 @@ export function ContratoDetalhes() {
             <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
               <Users className="w-4 h-4" /> Partes Envolvidas
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {typeof contrato.partes_envolvidas === 'object' && !Array.isArray(contrato.partes_envolvidas) ? (
                 Object.entries(contrato.partes_envolvidas).map(([k, v]) => (
                   <Campo key={k} label={k} value={v} />

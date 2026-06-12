@@ -160,7 +160,7 @@ export function ContratoForm() {
   }
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 md:p-8 max-w-3xl">
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-6 transition-colors"
@@ -185,7 +185,7 @@ export function ContratoForm() {
               <Label>Título do Contrato</Label>
               <Input value={form.titulo_contrato} onChange={set('titulo_contrato')} placeholder="Ex: Contrato de Prestação de Serviços" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Tipo de Documento</Label>
                 <Input value={form.tipo_documento} onChange={set('tipo_documento')} placeholder="Ex: Contrato, Adendo, NDA" />
@@ -195,7 +195,7 @@ export function ContratoForm() {
                 <Input value={form.categoria} onChange={set('categoria')} placeholder="Ex: Trabalhista, Comercial" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Status</Label>
                 <Select value={form.status_manual} onChange={set('status_manual')} options={STATUS_OPTS} placeholder="Selecionar status" />
@@ -214,7 +214,7 @@ export function ContratoForm() {
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
           <h3 className="font-semibold text-slate-800 mb-4">Datas</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <Label>Data de Assinatura</Label>
               <Input value={form.data_assinatura} onChange={set('data_assinatura')} type="date" />
@@ -232,7 +232,7 @@ export function ContratoForm() {
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
           <h3 className="font-semibold text-slate-800 mb-4">Valores</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <Label>Valor Total</Label>
               <Input value={form.valor_total} onChange={set('valor_total')} placeholder="Ex: R$ 10.000,00" />

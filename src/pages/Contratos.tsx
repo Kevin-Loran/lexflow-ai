@@ -60,7 +60,7 @@ export function Contratos() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Contratos</h2>
