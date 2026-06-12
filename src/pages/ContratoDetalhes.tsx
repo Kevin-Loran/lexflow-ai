@@ -75,7 +75,7 @@ export function ContratoDetalhes() {
   useEffect(() => {
     async function fetchData() {
       const { data } = await supabase
-        .from('contratos')
+        .from('contratos_dashboard')
         .select('*')
         .eq('id', id)
         .single()
@@ -122,18 +122,21 @@ export function ContratoDetalhes() {
           <h2 className="text-2xl font-bold text-slate-900">
             {contrato.titulo_contrato || contrato.nome_arquivo || 'Contrato'}
           </h2>
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-2 mt-2 flex-wrap">
             {contrato.status_manual && (
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                contrato.status_manual === 'ativo' ? 'bg-emerald-100 text-emerald-700' :
-                contrato.status_manual === 'vencido' ? 'bg-red-100 text-red-700' :
+                contrato.status_manual === 'ativo'     ? 'bg-emerald-100 text-emerald-700' :
+                contrato.status_manual === 'vencido'   ? 'bg-red-100 text-red-700' :
+                contrato.status_manual === 'pendente'  ? 'bg-amber-100 text-amber-700' :
+                contrato.status_manual === 'cancelado' ? 'bg-slate-200 text-slate-600' :
                 'bg-slate-100 text-slate-600'
               }`}>{contrato.status_manual}</span>
             )}
             {contrato.prioridade_revisao && (
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                contrato.prioridade_revisao === 'alta' ? 'bg-red-100 text-red-700' :
+                contrato.prioridade_revisao === 'alta'  ? 'bg-red-100 text-red-700' :
                 contrato.prioridade_revisao === 'media' ? 'bg-amber-100 text-amber-700' :
+                contrato.prioridade_revisao === 'baixa' ? 'bg-blue-100 text-blue-700' :
                 'bg-slate-100 text-slate-600'
               }`}>Prioridade {contrato.prioridade_revisao}</span>
             )}
