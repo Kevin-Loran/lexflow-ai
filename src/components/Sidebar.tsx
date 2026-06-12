@@ -1,15 +1,14 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, FileText, Mail, Upload, HelpCircle, LogOut, Scale, X
+  LayoutDashboard, FileText, Briefcase, HelpCircle, LogOut, Scale, X
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/contratos', icon: FileText, label: 'Contratos' },
-  { to: '/email', icon: Mail, label: 'E-mail Profissional' },
-  { to: '/upload', icon: Upload, label: 'Upload Manual' },
-  { to: '/como-funciona', icon: HelpCircle, label: 'Como Funciona' },
+  { to: '/dashboard',  icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/contratos',  icon: FileText,         label: 'Contratos' },
+  { to: '/processos',  icon: Briefcase,         label: 'Processos' },
+  { to: '/como-funciona', icon: HelpCircle,    label: 'Como Funciona' },
 ]
 
 interface SidebarProps {

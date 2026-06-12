@@ -7,9 +7,9 @@ import { Dashboard } from './pages/Dashboard'
 import { Contratos } from './pages/Contratos'
 import { ContratoDetalhes } from './pages/ContratoDetalhes'
 import { ContratoForm } from './pages/ContratoForm'
-import { EmailProfissional } from './pages/EmailProfissional'
-import { UploadManual } from './pages/UploadManual'
 import { ComoFunciona } from './pages/ComoFunciona'
+import { Processos } from './pages/Processos'
+import { ProcessoDetalhes } from './pages/ProcessoDetalhes'
 
 export default function App() {
   return (
@@ -30,8 +30,8 @@ export default function App() {
             <Route path="/contratos/novo" element={<ContratoForm />} />
             <Route path="/contratos/:id/editar" element={<ContratoForm />} />
             <Route path="/contratos/:id" element={<ContratoDetalhes />} />
-            <Route path="/email" element={<EmailProfissional />} />
-            <Route path="/upload" element={<UploadManual />} />
+            <Route path="/processos" element={<Processos />} />
+            <Route path="/processos/:id" element={<ProcessoDetalhes />} />
             <Route path="/como-funciona" element={<ComoFunciona />} />
           </Route>
         </Routes>
