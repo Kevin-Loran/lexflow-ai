@@ -78,7 +78,8 @@ export function ProcessoDetalhes() {
   }, [id])
 
   async function handleStatusSave() {
-    await supabase.from('processos').update({ status: novoStatus }).eq('id', id)
+    const { error } = await supabase.from('processos').update({ status: novoStatus }).eq('id', id)
+    if (error) { alert('Erro ao salvar status: ' + error.message); return }
     setProcesso((p: any) => ({ ...p, status: novoStatus }))
     setEditandoStatus(false)
   }
@@ -102,12 +103,18 @@ export function ProcessoDetalhes() {
   )
 
   const end = processo.endereco || {}
-  const dc = processo.dados_contratuais || {}
-  const rb = processo.remuneracao_beneficios || {}
-  const jt = processo.jornada_trabalho || {}
-  const as = processo.ambiente_saude || {}
-  const pt = processo.provas_testemunhas || {}
+  const dc  = processo.dados_contratuais || {}
+  const rb  = processo.remuneracao_beneficios || {}
+  const jt  = processo.jornada_trabalho || {}
+  const amb = processo.ambiente_saude || {}
+  const pt  = processo.provas_testemunhas || {}
   const testemunhas: any[] = pt.testemunhas || []
+
+  function fmtDate(d: string | null): string | null {
+    if (!d) return null
+    const [y, m, day] = d.split('-')
+    return `${day}/${m}/${y}`
+  }
 
   return (
     <div className="p-4 md:p-8 md:pl-10 max-w-4xl">
@@ -191,8 +198,8 @@ export function ProcessoDetalhes() {
           <Campo label="Cargo no Registro" value={processo.cargo_registro} />
           <Campo label="Função Real" value={processo.funcao_real} />
           <Campo label="Motivo do Desligamento" value={processo.motivo_desligamento} />
-          <Campo label="Data de Admissão" value={processo.data_admissao ? new Date(processo.data_admissao).toLocaleDateString('pt-BR') : null} />
-          <Campo label="Data de Demissão" value={processo.data_demissao ? new Date(processo.data_demissao).toLocaleDateString('pt-BR') : null} />
+          <Campo label="Data de Admissão" value={fmtDate(processo.data_admissao)} />
+          <Campo label="Data de Demissão" value={fmtDate(processo.data_demissao)} />
           <Campo label="Aviso Prévio" value={dc.avisoPrevio?.tipo} />
           <CampoBool label="Aviso Prévio Cumprido" value={dc.avisoPrevio?.cumprido} />
           <CampoBool label="Desvio ou Acúmulo de Função" value={dc.desvioOuAcumuloFuncao} />
@@ -206,7 +213,7 @@ export function ProcessoDetalhes() {
               : null
           } />
           <Campo label="Valor Por Fora (mensal)" value={
-            rb.valorPorForaMensal
+            rb.valorPorForaMensal != null
               ? `R$ ${Number(rb.valorPorForaMensal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
               : null
           } />
@@ -230,14 +237,14 @@ export function ProcessoDetalhes() {
 
         {/* Ambiente e Saúde */}
         <Secao icon={Shield} titulo="Ambiente, Saúde e Segurança">
-          <Campo label="Agente de Risco" value={as.especificacaoAgenteRisco} />
-          <CampoBool label="Contato com Insalubridade/Periculosidade" value={as.contatoInsalubridadePericuloridade} />
-          <CampoBool label="Sofreu Acidente de Trabalho" value={as.sofreuAcidenteTrabalho} />
-          <CampoBool label="Desenvolveu Doença Ocupacional" value={as.desenvolveuDoencaOcupacional} />
-          <CampoBool label="Sofreu Assédio ou Perseguição" value={as.sofreuAssedioOuPerseguicao} />
-          {as.relatoAmbienteTrabalho && (
+          <Campo label="Agente de Risco" value={amb.especificacaoAgenteRisco} />
+          <CampoBool label="Contato com Insalubridade/Periculosidade" value={amb.contatoInsalubridadePericuloridade} />
+          <CampoBool label="Sofreu Acidente de Trabalho" value={amb.sofreuAcidenteTrabalho} />
+          <CampoBool label="Desenvolveu Doença Ocupacional" value={amb.desenvolveuDoencaOcupacional} />
+          <CampoBool label="Sofreu Assédio ou Perseguição" value={amb.sofreuAssedioOuPerseguicao} />
+          {amb.relatoAmbienteTrabalho && (
             <div className="sm:col-span-2">
-              <Campo label="Relato do Ambiente de Trabalho" value={as.relatoAmbienteTrabalho} />
+              <Campo label="Relato do Ambiente de Trabalho" value={amb.relatoAmbienteTrabalho} />
             </div>
           )}
         </Secao>

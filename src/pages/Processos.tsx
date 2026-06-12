@@ -131,10 +131,10 @@ export function Processos() {
                       {p.cargo_registro || '—'}
                     </td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                      {p.data_admissao ? new Date(p.data_admissao).toLocaleDateString('pt-BR') : '—'}
+                      {p.data_admissao ? p.data_admissao.split('-').reverse().join('/') : '—'}
                     </td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                      {p.data_demissao ? new Date(p.data_demissao).toLocaleDateString('pt-BR') : '—'}
+                      {p.data_demissao ? p.data_demissao.split('-').reverse().join('/') : '—'}
                     </td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                       {p.ultimo_salario_bruto
