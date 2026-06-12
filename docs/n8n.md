@@ -2,61 +2,85 @@
 
 ## Visão Geral
 
-O n8n é responsável pela automação de leitura e análise dos contratos. Quando um PDF é adicionado ao Google Drive monitorado, o workflow é disparado automaticamente, o arquivo é processado pelo OpenAI e os dados estruturados são salvos no Supabase.
+O n8n é responsável pela automação de leitura e análise dos contratos. Quando um PDF é adicionado à pasta monitorada no Google Drive, o workflow dispara automaticamente, extrai o texto, envia para análise via OpenAI e salva os dados estruturados no Supabase.
 
-## Workflow 1: Leitura de Contratos via Google Drive
+## Workflow 1: JuriTrack - Leitura de Contratos
 
 ### Nós do Workflow
 
 ```
-Google Drive Trigger
+Google Drive Trigger (polling a cada minuto)
    └─ Download file
        └─ Extract from File (PDF)
-           └─ Message a model (OpenAI)
+           └─ Message a model (GPT-5-mini)
                └─ Code in JavaScript
-                   └─ HTTP Request → Supabase
+                   └─ HTTP Request → Supabase REST API
 ```
 
-### Descrição de cada nó
+### Detalhes de cada nó
 
 **Google Drive Trigger**
-Fica escutando uma pasta específica do Google Drive. Quando um novo arquivo é criado (evento `fileCreated`), o workflow é disparado automaticamente.
+Faz polling a cada minuto na pasta **"Contratos Recebidos"** do Google Drive. Quando detecta um arquivo novo (evento `fileCreated`), inicia o fluxo. Usa autenticação OAuth2 com o Google Drive.
 
 **Download file**
-Faz o download do arquivo PDF identificado pelo trigger.
+Faz o download do arquivo PDF identificado pelo trigger usando o `id` retornado pelo Google Drive Trigger.
 
 **Extract from File**
-Extrai o texto bruto do PDF para que possa ser enviado ao modelo de linguagem.
+Extrai o texto bruto do PDF para enviar ao modelo de linguagem.
 
-**Message a model (OpenAI)**
-Envia o texto extraído para o OpenAI com um prompt estruturado. O modelo retorna um JSON com os campos do contrato: título, tipo, categoria, datas, valores, partes envolvidas, cláusulas, alertas e resumo.
+**Message a model (GPT-5-mini)**
+Envia o texto extraído para o modelo OpenAI com um prompt estruturado. O modelo retorna um JSON com todos os campos do contrato.
+
+Prompt instrui o modelo a:
+- Responder somente com JSON válido, sem markdown
+- Usar `null` quando uma informação não existir
+- Retornar datas no formato `DD/MM/AAAA`
+- Usar `prioridade_revisao` como `"Baixa"`, `"Média"` ou `"Alta"`
+- Aumentar a prioridade se houver multa, vencimento próximo, risco jurídico ou cláusula sensível
+
+Campos extraídos pelo modelo:
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| tipo_documento | string | Ex: Contrato de Prestação de Serviços |
+| titulo_contrato | string | Título do contrato |
+| categoria | string | Ex: Marketing Digital, Trabalhista |
+| resumo | string | Resumo do conteúdo |
+| data_assinatura | string | Formato DD/MM/AAAA |
+| data_inicio_vigencia | string | Formato DD/MM/AAAA |
+| data_fim_vigencia | string | Formato DD/MM/AAAA |
+| partes_envolvidas | array | Lista com nome, cnpj, cpf, papel |
+| valor_total | string | Ex: R$ 30.000,00 |
+| valor_mensal | string | Ex: R$ 2.500,00 |
+| forma_pagamento | string | Descrição da forma de pagamento |
+| prazos_importantes | array | Lista de prazos relevantes |
+| obrigacoes | array | Lista de obrigações das partes |
+| clausulas_relevantes | objeto | rescisao, multa, confidencialidade, renovacao, foro, lgpd |
+| pontos_de_atencao | array | Alertas identificados pela IA |
+| alertas_recomendados | array | Recomendações da IA |
+| prioridade_revisao | string | Baixa, Média ou Alta |
 
 **Code in JavaScript**
-Transforma e valida o JSON retornado pelo OpenAI, garantindo que os campos estejam no formato esperado pelo Supabase antes de enviar.
+Transforma e normaliza o JSON da IA antes de enviar ao Supabase. Responsabilidades:
+
+- Extrai o texto da IA em diferentes formatos de resposta possíveis
+- Remove markdown caso o modelo retorne ````json` por engano
+- Normaliza datas para `DD/MM/AAAA` (aceita ISO, com traço ou barra)
+- Substitui campos vazios, "não encontrado" e "null" por `null`
+- Garante que campos de lista sejam arrays e campos de mapa sejam objetos
+- Define campos fixos: `user_id`, `origem_documento`, `remetente_email`, `status_manual: "Ativo"`
 
 **HTTP Request**
-Faz um POST para a API REST do Supabase inserindo o contrato na tabela `contratos`.
+Faz POST para a API REST do Supabase inserindo o contrato na tabela `contratos`. Usa autenticação via API key e cabeçalho `Prefer: return=representation` para receber o registro criado como resposta.
 
-### Campos extraídos pelo OpenAI
+### Campos fixos definidos no JavaScript
 
-| Campo | Formato | Exemplo |
-|---|---|---|
-| titulo_contrato | text | CONTRATO DE PRESTAÇÃO DE SERVIÇOS |
-| tipo_documento | text | Contrato de Prestação de Serviços |
-| categoria | text | Marketing Digital |
-| resumo | text | Texto descritivo |
-| data_assinatura | DD/MM/AAAA | 25/06/2025 |
-| data_inicio_vigencia | DD/MM/AAAA | 25/06/2025 |
-| data_fim_vigencia | DD/MM/AAAA | 25/06/2026 |
-| valor_total | text | R$ 30.000,00 |
-| valor_mensal | text | R$ 2.500,00 |
-| forma_pagamento | text | 12 parcelas mensais |
-| partes_envolvidas | JSON | { cnpj, nome, papel } |
-| clausulas_relevantes | array | [ "cláusula 1", ... ] |
-| prazos_importantes | array | [ "prazo 1", ... ] |
-| pontos_de_atencao | array | [ "atenção 1", ... ] |
-| alertas_recomendados | array | [ "alerta 1", ... ] |
-| prioridade_revisao | text | alta, media, baixa |
+| Campo | Valor |
+|---|---|
+| user_id | ID fixo do usuário advogado |
+| origem_documento | "Upload manual via Google Drive" |
+| remetente_email | "Upload manual" |
+| status_manual | "Ativo" |
 
 ## Workflow 2: Leitura de Email (Planejado)
 
@@ -72,10 +96,12 @@ Email Trigger (Gmail ou IMAP)
                        └─ HTTP Request → Supabase
 ```
 
-A página de configuração de email já existe no frontend (`/email`), mas a conexão com o n8n ainda não foi configurada.
+A página de configuração de email já existe no frontend (`/email`), mas a conexão com o n8n ainda não foi feita.
 
 ## Observações
 
-O n8n utilizado é o n8n Cloud (beccadias.app.n8n.cloud). O plano atual tem limite de 1.000 execuções mensais.
+O n8n utilizado é o **n8n Cloud** (beccadias.app.n8n.cloud). O plano atual tem limite de 1.000 execuções mensais e está com 14 dias restantes de trial.
 
 Contratos enviados pelo Upload Manual do frontend não passam pelo n8n e portanto não recebem análise de IA. Os campos precisam ser preenchidos manualmente pelo formulário de edição.
+
+O `user_id` está fixo no nó de JavaScript. Para suportar múltiplos advogados no futuro, será necessário passar o `user_id` dinamicamente pelo nome do arquivo ou por metadados do Google Drive.
