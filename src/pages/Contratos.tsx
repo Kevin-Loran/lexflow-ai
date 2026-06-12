@@ -32,7 +32,8 @@ export function Contratos() {
   async function handleDelete(e: React.MouseEvent, contratoId: string) {
     e.stopPropagation()
     if (!window.confirm('Excluir este contrato?')) return
-    await supabase.from('contratos').delete().eq('id', contratoId)
+    const { error } = await supabase.from('contratos').delete().eq('id', contratoId)
+    if (error) { alert('Erro ao excluir: ' + error.message); return }
     setContratos(prev => prev.filter(c => c.id !== contratoId))
   }
 

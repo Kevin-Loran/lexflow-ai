@@ -88,7 +88,8 @@ export function ContratoDetalhes() {
   async function handleDelete() {
     if (!window.confirm('Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita.')) return
     setExcluindo(true)
-    await supabase.from('contratos').delete().eq('id', id)
+    const { error } = await supabase.from('contratos').delete().eq('id', id)
+    if (error) { alert('Erro ao excluir: ' + error.message); setExcluindo(false); return }
     navigate('/contratos')
   }
 
