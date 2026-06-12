@@ -60,7 +60,7 @@ export function Contratos() {
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 md:pl-10">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Contratos</h2>
@@ -77,14 +77,14 @@ export function Contratos() {
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">
         <div className="p-4 flex flex-wrap gap-3 items-center border-b border-slate-100">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div className="flex items-center gap-2 flex-1 min-w-[200px] border border-slate-200 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
+            <Search className="w-4 h-4 text-slate-400 shrink-0" />
             <input
               type="text"
               placeholder="Buscar por título..."
               value={busca}
               onChange={e => setBusca(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 text-sm focus:outline-none bg-transparent"
             />
           </div>
 

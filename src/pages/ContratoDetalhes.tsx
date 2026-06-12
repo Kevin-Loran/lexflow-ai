@@ -107,7 +107,7 @@ export function ContratoDetalhes() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl">
+    <div className="p-4 md:p-8 md:pl-10 max-w-4xl">
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-6 transition-colors"

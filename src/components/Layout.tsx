@@ -17,7 +17,7 @@ export function Layout() {
 
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 overflow-auto min-w-0 lg:pl-0">
+      <main className="flex-1 overflow-auto min-w-0">
         <div className="lg:hidden flex items-center gap-3 px-4 py-4 bg-slate-900 sticky top-0 z-10 border-b border-slate-700 shadow-md">
           <button onClick={() => setSidebarOpen(true)} className="text-white p-1">
             <Menu className="w-6 h-6" />

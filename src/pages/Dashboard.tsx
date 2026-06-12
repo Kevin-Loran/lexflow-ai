@@ -66,7 +66,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 md:pl-10">
       <div className="mb-6 md:mb-8">
         <h2 className="text-xl md:text-2xl font-bold text-slate-900">Dashboard</h2>
         <p className="text-slate-500 text-sm mt-1">Visão geral dos seus contratos</p>
