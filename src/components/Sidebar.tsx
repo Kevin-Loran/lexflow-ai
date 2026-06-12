@@ -30,7 +30,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     <aside className={`
       w-64 min-h-screen bg-slate-900 flex flex-col shrink-0
       fixed lg:relative inset-y-0 left-0 z-30
-      transition-transform duration-300
+      transition-transform duration-300 border-r border-slate-700 shadow-xl
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
     `}>
       <div className="p-6 border-b border-slate-700">
