@@ -2,7 +2,61 @@
 
 ## Visão Geral
 
-O n8n gerencia dois workflows de leitura automática de contratos. Ambos monitoram pastas no Google Drive, extraem o texto do PDF, enviam para análise de IA e salvam no Supabase. A diferença principal está no modelo de IA utilizado e no nível de tratamento dos dados antes de salvar.
+O n8n gerencia três workflows que formam um pipeline completo de ingestão e análise de contratos.
+
+```
+Email com anexo PDF
+   └─ Workflow 3: detecta a palavra "Contrato" no assunto e faz upload para o Google Drive
+         └─ Workflow 1 (GPT-5-mini): lê o PDF do Drive, analisa com IA e salva no Supabase
+         └─ Workflow 2 (Gemini): mesma lógica, monitora uma pasta diferente no Drive
+```
+
+O Workflow 3 é a **porta de entrada**: transforma emails em arquivos no Drive. Os Workflows 1 e 2 são os **motores de análise**: leem os PDFs, extraem os dados com IA e gravam na tabela `contratos` do Supabase.
+
+---
+
+## Workflow 3: Disparo por Email com Palavra-Chave
+
+Este workflow é o ponto de entrada do pipeline. Ele monitora a caixa de entrada do Gmail, identifica emails com contratos em anexo e os envia automaticamente para o Google Drive, de onde o Workflow 1 os processa.
+
+### Fluxo
+
+```
+Gmail Trigger (polling a cada minuto)
+   └─ Filtro: Subject contém "Contrato"?
+       └─ Gmail get: baixa a mensagem com anexos
+           └─ Set: conta quantos anexos binários existem (Validador_de_doc)
+               └─ If: Validador_de_doc == 1?
+                   ├─ true → Google Drive: upload para "Contratos Recebidos"
+                   └─ false → No Operation (ignora emails sem anexo)
+```
+
+### Detalhes de cada nó
+
+**Recebe email (Gmail Trigger)**
+Polling a cada minuto na conta OAuth2 "Advogado". Retorna todos os emails novos sem filtro inicial.
+
+**Filtra Para palavra chave no titulo**
+Nó Filter que verifica se o campo `Subject` do email contém a string `"Contrato"` (case sensitive). Apenas emails que passam seguem adiante.
+
+**Pega dados do email e extrai o PDF**
+Nó Gmail `get:message` que baixa a mensagem completa, com a opção `downloadAttachments: true`. O nome do campo binário gerado usa o `id` do email como prefixo.
+
+**Váriável para Validar se tem DOC**
+Nó Set que cria o campo `Validador_de_doc = Object.keys($binary).length`. Isso conta quantos arquivos binários (anexos) foram baixados.
+
+**Condicional se não houver doc**
+Nó If que compara `Validador_de_doc === 1`. Se verdadeiro, o email tem exatamente um anexo e o fluxo segue para o upload. Se falso (zero ou múltiplos anexos), cai no "No Operation".
+
+**Upload de documento (Google Drive)**
+Faz o upload do arquivo para a pasta **"Contratos Recebidos"** (ID: `1IRp02lUejjxDEKjaRQlgfrciJzXF0Gwb`) no Google Drive da conta "Advogado". Ao chegar nessa pasta, o **Workflow 1** é acionado automaticamente pelo seu Google Drive Trigger.
+
+**No Operation, do nothing**
+Encerra o fluxo silenciosamente quando o email não tem anexo ou tem mais de um.
+
+### Conexão com os outros workflows
+
+Depois que o PDF chega na pasta "Contratos Recebidos" do Google Drive, o Workflow 1 (GPT-5-mini) detecta o novo arquivo e inicia a análise de IA automaticamente. O Workflow 2 (Gemini) monitora uma pasta diferente ("Hackaton") e não é alimentado por este workflow.
 
 ---
 
@@ -88,16 +142,17 @@ POST para a API REST do Supabase, tabela `contratos`.
 
 ---
 
-## Comparativo entre os dois workflows
+## Comparativo entre os três workflows
 
-| Característica | Workflow 1 (GPT) | Workflow 2 (Gemini) |
-|---|---|---|
-| Pasta monitorada | Contratos Recebidos | Hackaton |
-| Modelo de IA | GPT-5-mini | gemini-3.1-flash-lite |
-| Normalização de datas | Sim (DD/MM/AAAA) | Não |
-| Campos fixos (user_id, status) | Sim | Não |
-| Tratamento de erros da IA | Robusto | Básico |
-| Destino | Supabase `contratos` | Supabase `contratos` |
+| Característica | Workflow 3 (Email) | Workflow 1 (GPT) | Workflow 2 (Gemini) |
+|---|---|---|---|
+| Gatilho | Gmail Trigger | Google Drive Trigger | Google Drive Trigger |
+| Função | Ingestão (email → Drive) | Análise de IA | Análise de IA |
+| Filtro de entrada | Palavra "Contrato" no assunto | Pasta "Contratos Recebidos" | Pasta "Hackaton" |
+| Modelo de IA | Nenhum | GPT-5-mini | gemini-3.1-flash-lite |
+| Normalização de datas | N/A | Sim (DD/MM/AAAA) | Não |
+| Campos fixos (user_id, status) | N/A | Sim | Não |
+| Destino final | Google Drive | Supabase `contratos` | Supabase `contratos` |
 
 ---
 
