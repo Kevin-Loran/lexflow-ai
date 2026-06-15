@@ -1,4 +1,4 @@
-# LexFlow AI
+# JuriTech
 
 LexFlow AI é uma plataforma SaaS jurídica para advogados gerenciarem contratos de forma inteligente. O sistema lê PDFs automaticamente via n8n e OpenAI, extrai as informações relevantes e organiza tudo em um dashboard limpo e funcional.
 
