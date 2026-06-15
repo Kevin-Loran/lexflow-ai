@@ -1,45 +1,91 @@
 # JuriTech
 
-LexFlow AI é uma plataforma SaaS jurídica para advogados gerenciarem contratos de forma inteligente. O sistema lê PDFs automaticamente via n8n e OpenAI, extrai as informações relevantes e organiza tudo em um dashboard limpo e funcional.
+Plataforma SaaS jurídica que automatiza a gestão de contratos e processos trabalhistas para advogados. Contratos chegam por e-mail ou Google Drive, passam por análise de IA e são organizados automaticamente em um dashboard completo.
 
-## Como o sistema funciona
+## Visão Geral
 
-Quando um contrato em PDF chega pelo Google Drive, o n8n detecta o arquivo, extrai o texto, envia para análise de IA e salva os dados estruturados no Supabase. O advogado consegue visualizar todos os contratos, ver quais estão vencendo, filtrar por categoria, status e prioridade, e acessar o detalhe completo de cada um.
+O JuriTech resolve um problema comum em escritórios de advocacia: a gestão manual e descentralizada de contratos e processos. Com o sistema, contratos em PDF são captados automaticamente, analisados por IA e salvos no banco de dados com todos os campos extraídos (partes, valores, prazos, cláusulas, alertas). O advogado acessa tudo por um painel limpo, com filtros, busca e alertas de vencimento.
 
-Também é possível fazer upload manual de contratos pelo próprio dashboard, criar contratos do zero pelo formulário, editar qualquer campo e excluir registros.
+## Funcionalidades
+
+**Contratos**
+- Captura automática de contratos via e-mail ou Google Drive
+- Análise por IA com extração de partes, valores, prazos, cláusulas e obrigações
+- Dashboard com filtro por status, categoria e prioridade
+- Alertas de vencimento com contagem de dias
+- Status manual configurável (Ativo, Vencido, Pendente, Cancelado)
+- CRUD completo com edição de campos e exclusão
+
+**Processos Trabalhistas**
+- Captura via e-mail com palavra-chave
+- Análise automática por IA dos dados do processo
+- Visualização em cards por prioridade
+- Detalhe completo com identificação, partes, valores, cláusulas e análise da IA
+
+**Autenticação e Segurança**
+- Login e cadastro com Supabase Auth
+- Row Level Security (RLS) no banco de dados
+- Cada advogado acessa apenas seus próprios dados
+
+## Fluxo de Automação
+
+### Contratos
+
+> Adicione aqui a imagem do fluxo de contratos no n8n
+
+```
+E-mail ou Drive → n8n detecta → Extrai texto do PDF → IA analisa → Supabase salva → Dashboard exibe
+```
+
+![Fluxo de Contratos](docs/images/fluxo-contratos.png)
+
+### Processos Trabalhistas
+
+> Adicione aqui a imagem do fluxo de processos no n8n
+
+```
+Cliente envia e-mail → n8n capta por palavra-chave → IA extrai dados → Supabase salva → Dashboard exibe
+```
+
+![Fluxo de Processos](docs/images/fluxo-processos.png)
 
 ## Stack
 
 | Camada | Tecnologia |
 |---|---|
-| Frontend | React 19 + TypeScript + Vite + Tailwind CSS v4 |
-| Banco de dados | Supabase (PostgreSQL + RLS + Storage + Auth) |
+| Frontend | React 19 + TypeScript + Vite 8 + Tailwind CSS v4 |
+| Banco de dados | Supabase (PostgreSQL + RLS + Auth) |
 | Automação | n8n Cloud |
-| IA | OpenAI |
+| IA | OpenAI GPT + Google Gemini |
+| Hospedagem | GitHub Pages + GitHub Actions |
 
-## Estrutura do repositório
+## Estrutura do Repositório
 
 ```
 /
-├── src/               Código-fonte do frontend React
-├── public/            Arquivos estáticos
-├── docs/              Documentação do projeto
-│   ├── frontend.md    Componentes, rotas e lógica do frontend
-│   ├── supabase.md    Tabelas, views, funções e Storage
-│   └── n8n.md         Workflows de automação
+├── src/
+│   ├── pages/          Páginas da aplicação
+│   ├── components/     Componentes reutilizáveis
+│   ├── contexts/       Contexto de autenticação
+│   └── lib/            Configuração do Supabase
+├── public/             Arquivos estáticos e 404.html (SPA redirect)
+├── docs/               Documentação técnica do projeto
+│   ├── frontend.md     Componentes, rotas e lógica do frontend
+│   ├── supabase.md     Tabelas, views, funções e RLS
+│   └── n8n.md          Workflows de automação e integração com IA
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml Deploy automático no GitHub Pages
+│       └── deploy.yml  Deploy automático no GitHub Pages
 └── README.md
 ```
 
-## Documentação
+## Documentação Técnica
 
 - [Frontend](docs/frontend.md) — componentes, rotas, autenticação e lógica
 - [Supabase](docs/supabase.md) — tabelas, views, RLS e Storage
 - [n8n](docs/n8n.md) — workflows de automação e integração com IA
 
-## Rodando localmente
+## Rodando Localmente
 
 ```bash
 npm install
@@ -48,8 +94,14 @@ npm run dev
 
 O projeto sobe em `http://localhost:5173`.
 
+Configure as variáveis do Supabase em `src/lib/supabase.ts` com a URL e a chave anon do seu projeto.
+
 ## Deploy
 
-O deploy é feito automaticamente no GitHub Pages a cada push na branch `main` via GitHub Actions.
+O deploy é feito automaticamente no GitHub Pages a cada push na branch `main` via GitHub Actions. O workflow instala as dependências, faz o build e publica o conteúdo da pasta `dist/`.
 
-URL de produção: `https://kevin-loran.github.io/lexflow-ai/`
+URL de produção: `https://kevin-loran.github.io/JuriTech/`
+
+## Licença
+
+Projeto privado. Todos os direitos reservados.
