@@ -14,7 +14,7 @@ import { ProcessoDetalhes } from './pages/ProcessoDetalhes'
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename="/lexflow-ai">
+      <BrowserRouter basename="/JuriTech">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
