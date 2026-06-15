@@ -4,7 +4,7 @@ const etapas = [
   {
     icon: LogIn,
     titulo: '1. Login na plataforma',
-    descricao: 'O advogado cria sua conta e faz login no LexFlow AI com e-mail e senha.',
+    descricao: 'O advogado cria sua conta e faz login no JuriTech com e-mail e senha.',
     cor: 'bg-blue-500',
   },
   {
@@ -50,7 +50,7 @@ export function ComoFunciona() {
     <div className="p-8 max-w-3xl">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-900">Como Funciona</h2>
-        <p className="text-slate-500 text-sm mt-1">Entenda o fluxo completo do LexFlow AI</p>
+        <p className="text-slate-500 text-sm mt-1">Entenda o fluxo completo do JuriTech</p>
       </div>
 
       <div className="relative">
@@ -72,7 +72,7 @@ export function ComoFunciona() {
       </div>
 
       <div className="mt-10 bg-gradient-to-br from-blue-900 to-slate-900 rounded-2xl p-8 text-center">
-        <h3 className="text-white font-bold text-xl mb-2">LexFlow AI</h3>
+        <h3 className="text-white font-bold text-xl mb-2">JuriTech</h3>
         <p className="text-blue-300 text-sm">
           Automação jurídica inteligente — do recebimento do contrato ao alerta de vencimento.
         </p>

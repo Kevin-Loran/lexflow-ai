@@ -22,7 +22,7 @@ export function Layout() {
           <button onClick={() => setSidebarOpen(true)} className="text-white p-1">
             <Menu className="w-6 h-6" />
           </button>
-          <span className="text-white font-bold text-lg">LexFlow</span>
+          <span className="text-white font-bold text-lg">JuriTech</span>
         </div>
         <Outlet />
       </main>

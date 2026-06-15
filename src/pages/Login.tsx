@@ -148,7 +148,7 @@ export function Login() {
           >
             <Scale className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">LexFlow AI</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">JuriTech</h1>
           <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
             Gestão inteligente de contratos
           </p>
@@ -264,7 +264,7 @@ export function Login() {
         </div>
 
         <p className="text-center text-xs mt-6" style={{ color: 'rgba(255,255,255,0.15)' }}>
-          LexFlow AI © 2026 — Lex Praxis
+          JuriTech © 2026 — Lex Praxis
         </p>
       </motion.div>
     </div>

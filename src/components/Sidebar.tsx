@@ -39,7 +39,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <Scale className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-white font-bold text-lg leading-none">LexFlow</h1>
+              <h1 className="text-white font-bold text-lg leading-none">JuriTech</h1>
               <span className="text-blue-400 text-xs">AI Jurídico</span>
             </div>
           </div>
