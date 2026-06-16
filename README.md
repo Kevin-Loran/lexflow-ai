@@ -1,4 +1,4 @@
-# JuriTech
+# <img src="public/favicon.png" width="32" height="32" align="center" /> JuriTech
 
 Plataforma SaaS jurídica que automatiza a gestão de contratos e processos trabalhistas para advogados. Contratos chegam por e-mail ou Google Drive, passam por análise de IA e são organizados automaticamente em um dashboard completo.
 
