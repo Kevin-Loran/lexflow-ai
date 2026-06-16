@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Menu, Bell } from 'lucide-react'
@@ -23,26 +23,65 @@ function getPageMeta(pathname: string) {
   return { title: 'JuriTech', subtitle: '' }
 }
 
+const EXPANDED  = 280
+const COLLAPSED = 72
+
 export function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  // Desktop/tablet: expanded vs collapsed (tablet starts collapsed)
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') return window.innerWidth < 1024
+    return false
+  })
+  // Mobile: drawer open state
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   const { user } = useAuth()
   const location = useLocation()
   const { title, subtitle } = getPageMeta(location.pathname)
   const initial = user?.email?.[0]?.toUpperCase() ?? '?'
 
+  // Close mobile drawer on navigation
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
+
   return (
-    <div className="flex min-h-screen" style={{ background: '#F8FAFC' }}>
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 lg:hidden"
-          style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setSidebarOpen(false)}
+    <div className="flex" style={{ minHeight: '100vh', background: '#F8FAFC' }}>
+
+      {/* ── Desktop / Tablet sidebar — lives in the flex flow, animates width ── */}
+      <div
+        className="hidden md:block shrink-0"
+        style={{
+          width: collapsed ? COLLAPSED : EXPANDED,
+          transition: 'width 0.25s ease',
+        }}
+      >
+        <Sidebar
+          collapsed={collapsed}
+          onToggle={() => setCollapsed(c => !c)}
         />
-      )}
+      </div>
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {/* ── Mobile overlay ── */}
+      <div
+        className={`md:hidden fixed inset-0 z-20 transition-opacity duration-300 ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
+        onClick={() => setMobileOpen(false)}
+      />
 
+      {/* ── Mobile drawer ── */}
+      <div
+        className={`md:hidden fixed inset-y-0 left-0 z-30 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ width: EXPANDED }}
+      >
+        <Sidebar
+          collapsed={false}
+          onToggle={() => {}}
+          onClose={() => setMobileOpen(false)}
+        />
+      </div>
+
+      {/* ── Main ── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar */}
         <header
@@ -50,9 +89,10 @@ export function Layout() {
           style={{ borderBottom: '1px solid #E2E8F0' }}
         >
           <div className="flex items-center gap-3 min-w-0">
+            {/* Hamburger — mobile only */}
             <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-1.5 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors shrink-0"
+              onClick={() => setMobileOpen(true)}
+              className="md:hidden p-1.5 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors shrink-0"
             >
               <Menu className="w-5 h-5" />
             </button>
