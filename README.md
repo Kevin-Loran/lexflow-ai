@@ -31,23 +31,22 @@ O JuriTech resolve um problema comum em escritórios de advocacia: a gestão man
 
 ### Contratos
 
-> Adicione aqui a imagem do fluxo de contratos no n8n
+<img width="1449" height="288" alt="image" src="https://github.com/user-attachments/assets/57574529-45cc-4677-8801-2e4c0a6e2e56" />
+
 
 ```
 E-mail ou Drive → n8n detecta → Extrai texto do PDF → IA analisa → Supabase salva → Dashboard exibe
 ```
 
-![Fluxo de Contratos](docs/images/fluxo-contratos.png)
 
 ### Processos Trabalhistas
 
-> Adicione aqui a imagem do fluxo de processos no n8n
+<img width="1385" height="402" alt="image" src="https://github.com/user-attachments/assets/5b045a86-9740-4c69-a666-e9c35941816b" />
+
 
 ```
 Cliente envia e-mail → n8n capta por palavra-chave → IA extrai dados → Supabase salva → Dashboard exibe
 ```
-
-![Fluxo de Processos](docs/images/fluxo-processos.png)
 
 ## Stack
 
