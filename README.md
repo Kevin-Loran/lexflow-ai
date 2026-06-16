@@ -1,5 +1,5 @@
 # <img src="public/favicon.png" width="32" height="32" align="center" /> JuriTech
-&#11088;Projeto campeão do hackaton inteligência artificial e empregabilidade cedido pela ATRIA&#11088;
+&#11088;Projeto campeão do hackaton de inteligência artificial e empregabilidade cedido pela ATRIA&#11088;
 
 Plataforma SaaS jurídica que automatiza a gestão de contratos e processos trabalhistas para advogados. Contratos chegam por e-mail ou Google Drive, passam por análise de IA e são organizados automaticamente em um dashboard completo.
 
