@@ -6,12 +6,9 @@ import { ArrowLeft, ExternalLink, Calendar, DollarSign, Users, FileText, AlertTr
 function formatarData(v: any): string | null {
   if (!v) return null
   const s = String(v)
-  // BR format DD/MM/YYYY — já pronto para exibir
   if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s.slice(0, 10)
-  // ISO YYYY-MM-DD
   const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
   if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`
-  // Outro formato: tenta parse genérico
   const d = new Date(s)
   if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR')
   return s
@@ -56,13 +53,26 @@ function ListaCampo({ label, value }: { label: string; value?: any }) {
       <ul className="mt-1 space-y-1">
         {items.map((item, i) => (
           <li key={i} className="text-sm text-slate-800 flex gap-2">
-            <span className="text-blue-400 mt-0.5">•</span>
+            <span className="text-indigo-400 mt-0.5">•</span>
             {formatarValor(item)}
           </li>
         ))}
       </ul>
     </div>
   )
+}
+
+const STATUS_BADGE: Record<string, string> = {
+  ativo:     'bg-emerald-100 text-emerald-700',
+  vencido:   'bg-red-100 text-red-700',
+  pendente:  'bg-amber-100 text-amber-700',
+  cancelado: 'bg-slate-200 text-slate-600',
+}
+
+const PRIO_BADGE: Record<string, string> = {
+  alta:  'bg-red-100 text-red-700',
+  media: 'bg-amber-100 text-amber-700',
+  baixa: 'bg-indigo-100 text-indigo-700',
 }
 
 export function ContratoDetalhes() {
@@ -96,49 +106,41 @@ export function ContratoDetalhes() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   if (!contrato) {
-    return (
-      <div className="p-8 text-center text-slate-400">Contrato não encontrado.</div>
-    )
+    return <div className="p-8 text-center text-slate-400">Contrato não encontrado.</div>
   }
 
   return (
     <div className="p-4 md:p-8 md:pl-10 max-w-4xl">
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-6 transition-colors"
+        className="flex items-center gap-2 text-slate-400 hover:text-slate-900 text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Voltar
       </button>
 
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
             {contrato.titulo_contrato || contrato.nome_arquivo || 'Contrato'}
           </h2>
           <div className="flex gap-2 mt-2 flex-wrap">
             {contrato.status_manual && (
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                contrato.status_manual === 'ativo'     ? 'bg-emerald-100 text-emerald-700' :
-                contrato.status_manual === 'vencido'   ? 'bg-red-100 text-red-700' :
-                contrato.status_manual === 'pendente'  ? 'bg-amber-100 text-amber-700' :
-                contrato.status_manual === 'cancelado' ? 'bg-slate-200 text-slate-600' :
-                'bg-slate-100 text-slate-600'
-              }`}>{contrato.status_manual}</span>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_BADGE[contrato.status_manual] ?? 'bg-slate-100 text-slate-600'}`}>
+                {contrato.status_manual}
+              </span>
             )}
             {contrato.prioridade_revisao && (
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                contrato.prioridade_revisao === 'alta'  ? 'bg-red-100 text-red-700' :
-                contrato.prioridade_revisao === 'media' ? 'bg-amber-100 text-amber-700' :
-                contrato.prioridade_revisao === 'baixa' ? 'bg-blue-100 text-blue-700' :
-                'bg-slate-100 text-slate-600'
-              }`}>Prioridade {contrato.prioridade_revisao}</span>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${PRIO_BADGE[contrato.prioridade_revisao] ?? 'bg-slate-100 text-slate-600'}`}>
+                Prioridade {contrato.prioridade_revisao}
+              </span>
             )}
           </div>
         </div>
@@ -148,7 +150,7 @@ export function ContratoDetalhes() {
               href={contrato.arquivo_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-xl transition-colors font-medium"
             >
               <ExternalLink className="w-4 h-4" />
               Abrir PDF
@@ -156,7 +158,7 @@ export function ContratoDetalhes() {
           )}
           <button
             onClick={() => navigate(`/contratos/${id}/editar`)}
-            className="flex items-center gap-2 border border-slate-200 hover:border-blue-400 hover:text-blue-600 text-slate-600 text-sm px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 text-slate-600 text-sm px-4 py-2 rounded-xl transition-colors"
           >
             <Pencil className="w-4 h-4" />
             Editar
@@ -164,7 +166,7 @@ export function ContratoDetalhes() {
           <button
             onClick={handleDelete}
             disabled={excluindo}
-            className="flex items-center gap-2 border border-red-200 hover:bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 border border-red-200 hover:bg-red-50 text-red-600 text-sm px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
           >
             <Trash2 className="w-4 h-4" />
             {excluindo ? 'Excluindo...' : 'Excluir'}
@@ -172,19 +174,19 @@ export function ContratoDetalhes() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {contrato.resumo && (
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-5">
-            <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5">
+            <h3 className="font-semibold text-indigo-900 mb-2 flex items-center gap-2 text-sm">
               <FileText className="w-4 h-4" /> Resumo
             </h3>
-            <p className="text-blue-800 text-sm leading-relaxed">{contrato.resumo}</p>
+            <p className="text-indigo-800 text-sm leading-relaxed">{contrato.resumo}</p>
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-            <FileText className="w-4 h-4" /> Informações Gerais
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 text-sm">
+            <FileText className="w-4 h-4 text-indigo-500" /> Informações Gerais
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Campo label="Tipo de Documento" value={contrato.tipo_documento} />
@@ -195,9 +197,9 @@ export function ContratoDetalhes() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-            <Calendar className="w-4 h-4" /> Datas
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 text-sm">
+            <Calendar className="w-4 h-4 text-indigo-500" /> Datas
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Campo label="Data de Assinatura" value={formatarData(contrato.data_assinatura)} />
@@ -206,9 +208,9 @@ export function ContratoDetalhes() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-            <DollarSign className="w-4 h-4" /> Valores
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 text-sm">
+            <DollarSign className="w-4 h-4 text-indigo-500" /> Valores
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Campo label="Valor Total" value={contrato.valor_total} />
@@ -218,9 +220,9 @@ export function ContratoDetalhes() {
         </div>
 
         {contrato.partes_envolvidas && (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-            <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <Users className="w-4 h-4" /> Partes Envolvidas
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 text-sm">
+              <Users className="w-4 h-4 text-indigo-500" /> Partes Envolvidas
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {typeof contrato.partes_envolvidas === 'object' && !Array.isArray(contrato.partes_envolvidas) ? (
@@ -234,18 +236,18 @@ export function ContratoDetalhes() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-4">
-          <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-            <CheckSquare className="w-4 h-4" /> Obrigações e Cláusulas
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+          <h3 className="font-semibold text-slate-800 flex items-center gap-2 text-sm">
+            <CheckSquare className="w-4 h-4 text-indigo-500" /> Obrigações e Cláusulas
           </h3>
           <Campo label="Obrigações" value={contrato.obrigacoes} />
           <ListaCampo label="Cláusulas Relevantes" value={contrato.clausulas_relevantes} />
           <ListaCampo label="Prazos Importantes" value={contrato.prazos_importantes} />
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-4">
-          <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" /> Atenção e Alertas
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+          <h3 className="font-semibold text-slate-800 flex items-center gap-2 text-sm">
+            <AlertTriangle className="w-4 h-4 text-amber-500" /> Atenção e Alertas
           </h3>
           <ListaCampo label="Pontos de Atenção" value={contrato.pontos_de_atencao} />
           <ListaCampo label="Alertas Recomendados" value={contrato.alertas_recomendados} />

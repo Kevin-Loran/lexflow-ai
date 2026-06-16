@@ -7,28 +7,38 @@ import { ArrowLeft, Save } from 'lucide-react'
 const STATUS_OPTS = ['ativo', 'vencido', 'pendente', 'cancelado']
 const PRIORIDADE_OPTS = ['alta', 'media', 'baixa']
 
+const inputCls = 'w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50/50 transition-all'
+
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">{children}</label>
+  return (
+    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+      {children}
+    </label>
+  )
 }
 
-function Input({ value, onChange, type = 'text', placeholder }: { value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
+function Input({ value, onChange, type = 'text', placeholder }: {
+  value: string; onChange: (v: string) => void; type?: string; placeholder?: string
+}) {
   return (
     <input
       type={type}
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className={inputCls}
     />
   )
 }
 
-function Select({ value, onChange, options, placeholder }: { value: string; onChange: (v: string) => void; options: string[]; placeholder: string }) {
+function Select({ value, onChange, options, placeholder }: {
+  value: string; onChange: (v: string) => void; options: string[]; placeholder: string
+}) {
   return (
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className={inputCls}
     >
       <option value="">{placeholder}</option>
       {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -36,15 +46,26 @@ function Select({ value, onChange, options, placeholder }: { value: string; onCh
   )
 }
 
-function Textarea({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+function Textarea({ value, onChange, placeholder }: {
+  value: string; onChange: (v: string) => void; placeholder?: string
+}) {
   return (
     <textarea
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={3}
-      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+      className={`${inputCls} resize-none`}
     />
+  )
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <h3 className="font-semibold text-slate-800 text-sm mb-4">{title}</h3>
+      {children}
+    </div>
   )
 }
 
@@ -104,9 +125,7 @@ export function ContratoForm() {
 
   function isoDate(v: any): string {
     if (!v) return ''
-    // already ISO
     if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10)
-    // BR format DD/MM/YYYY
     const m = String(v).match(/^(\d{2})\/(\d{2})\/(\d{4})/)
     if (m) return `${m[3]}-${m[2]}-${m[1]}`
     return ''
@@ -154,7 +173,7 @@ export function ContratoForm() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -163,23 +182,22 @@ export function ContratoForm() {
     <div className="p-4 md:p-8 md:pl-10 max-w-3xl">
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-6 transition-colors"
+        className="flex items-center gap-2 text-slate-400 hover:text-slate-900 text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Voltar
       </button>
 
-      <h2 className="text-2xl font-bold text-slate-900 mb-6">
+      <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-6">
         {isEditing ? 'Editar Contrato' : 'Novo Contrato'}
       </h2>
 
       {erro && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{erro}</div>
+        <div className="mb-5 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">{erro}</div>
       )}
 
-      <div className="space-y-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4">Identificação</h3>
+      <div className="space-y-5">
+        <Section title="Identificação">
           <div className="grid grid-cols-1 gap-4">
             <div>
               <Label>Título do Contrato</Label>
@@ -210,10 +228,9 @@ export function ContratoForm() {
               <Input value={form.remetente_email} onChange={set('remetente_email')} type="email" placeholder="remetente@exemplo.com" />
             </div>
           </div>
-        </div>
+        </Section>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4">Datas</h3>
+        <Section title="Datas">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <Label>Data de Assinatura</Label>
@@ -228,10 +245,9 @@ export function ContratoForm() {
               <Input value={form.data_fim_vigencia} onChange={set('data_fim_vigencia')} type="date" />
             </div>
           </div>
-        </div>
+        </Section>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4">Valores</h3>
+        <Section title="Valores">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <Label>Valor Total</Label>
@@ -246,10 +262,9 @@ export function ContratoForm() {
               <Input value={form.forma_pagamento} onChange={set('forma_pagamento')} placeholder="Ex: Boleto, PIX" />
             </div>
           </div>
-        </div>
+        </Section>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4">Resumo e Obrigações</h3>
+        <Section title="Resumo e Obrigações">
           <div className="space-y-4">
             <div>
               <Label>Resumo</Label>
@@ -260,20 +275,20 @@ export function ContratoForm() {
               <Textarea value={form.obrigacoes} onChange={set('obrigacoes')} placeholder="Liste as obrigações principais..." />
             </div>
           </div>
-        </div>
+        </Section>
       </div>
 
       <div className="mt-6 flex justify-end gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors"
+          className="px-4 py-2.5 text-sm border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors"
         >
           Cancelar
         </button>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 text-sm bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-xl transition-colors font-medium shadow-sm"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Salvando...' : 'Salvar'}

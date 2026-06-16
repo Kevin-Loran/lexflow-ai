@@ -5,10 +5,10 @@ import {
   ArrowLeft, FileText, Users, DollarSign, Shield, Brain, Trash2, AlertTriangle
 } from 'lucide-react'
 
-const PRIORIDADE_CORES: Record<string, string> = {
-  'alta':  'bg-red-100 text-red-700',
-  'media': 'bg-amber-100 text-amber-700',
-  'baixa': 'bg-emerald-100 text-emerald-700',
+const PRIORIDADE_BADGE: Record<string, string> = {
+  alta:  'bg-red-100 text-red-700',
+  media: 'bg-amber-100 text-amber-700',
+  baixa: 'bg-emerald-100 text-emerald-700',
 }
 
 function parseLista(v: string | null | undefined): string[] | null {
@@ -41,7 +41,7 @@ function ListaCampo({ label, items, icon: Icon }: { label: string; items: string
           <li key={i} className="flex items-start gap-2 text-sm text-slate-800">
             {Icon
               ? <Icon className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-              : <span className="text-blue-400 mt-0.5 shrink-0">•</span>
+              : <span className="text-indigo-400 mt-0.5 shrink-0">•</span>
             }
             {item}
           </li>
@@ -53,9 +53,9 @@ function ListaCampo({ label, items, icon: Icon }: { label: string; items: string
 
 function Secao({ icon: Icon, titulo, children }: { icon: any; titulo: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-      <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-        <Icon className="w-4 h-4 text-blue-500" /> {titulo}
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 text-sm">
+        <Icon className="w-4 h-4 text-indigo-500" /> {titulo}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {children}
@@ -94,7 +94,7 @@ export function ProcessoDetalhes() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
@@ -106,24 +106,25 @@ export function ProcessoDetalhes() {
   const obrigacoes = parseLista(processo.obrigacoes)
   const pontos    = parseLista(processo.pontos_de_atencao)
   const alertas   = parseLista(processo.alertas_recomendados)
+  const prioBadge = PRIORIDADE_BADGE[(processo.prioridade_revisao || '').toLowerCase()]
 
   return (
     <div className="p-4 md:p-8 md:pl-10 max-w-4xl">
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-6 transition-colors"
+        className="flex items-center gap-2 text-slate-400 hover:text-slate-900 text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Voltar
       </button>
 
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
             {processo.titulo_contrato || 'Sem título'}
           </h2>
           <p className="text-slate-500 text-sm mt-1">{processo.tipo_documento || ''}</p>
           {processo.prioridade_revisao && (
-            <span className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium ${PRIORIDADE_CORES[processo.prioridade_revisao?.toLowerCase()] || 'bg-slate-100 text-slate-500'}`}>
+            <span className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium ${prioBadge ?? 'bg-slate-100 text-slate-500'}`}>
               Prioridade: {processo.prioridade_revisao}
             </span>
           )}
@@ -132,7 +133,7 @@ export function ProcessoDetalhes() {
         <button
           onClick={handleDelete}
           disabled={excluindo}
-          className="flex items-center gap-2 border border-red-200 hover:bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50 self-start"
+          className="flex items-center gap-2 border border-red-200 hover:bg-red-50 text-red-600 text-sm px-4 py-2 rounded-xl transition-colors disabled:opacity-50 self-start"
         >
           <Trash2 className="w-4 h-4" />
           {excluindo ? 'Excluindo...' : 'Excluir'}
@@ -140,7 +141,6 @@ export function ProcessoDetalhes() {
       </div>
 
       <div className="space-y-5">
-
         <Secao icon={FileText} titulo="Identificação">
           <Campo label="Tipo de Documento" value={processo.tipo_documento} />
           <Campo label="Categoria" value={processo.categoria} />
@@ -171,9 +171,9 @@ export function ProcessoDetalhes() {
           <Campo label="LGPD" value={processo.clausula_lgpd} />
         </Secao>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-            <Brain className="w-4 h-4 text-blue-500" /> Análise da IA
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 text-sm">
+            <Brain className="w-4 h-4 text-indigo-500" /> Análise da IA
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ListaCampo label="Prazos Importantes" items={prazos} />
@@ -182,7 +182,6 @@ export function ProcessoDetalhes() {
             <ListaCampo label="Alertas Recomendados" items={alertas} icon={AlertTriangle} />
           </div>
         </div>
-
       </div>
     </div>
   )
