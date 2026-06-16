@@ -2,171 +2,82 @@
 
 ## Visão Geral
 
-O n8n gerencia três workflows que formam um pipeline completo de ingestão e análise de contratos.
+O n8n gerencia os fluxos de automação que conectam o Gmail, Google Drive e Supabase. Existem dois pipelines independentes: um para **contratos** e outro para **processos trabalhistas**.
 
 ```
-Email com anexo PDF
-   └─ Workflow 3: detecta a palavra "Contrato" no assunto e faz upload para o Google Drive
-         └─ Workflow 1 (GPT-5-mini): lê o PDF do Drive, analisa com IA e salva no Supabase
-         └─ Workflow 2 (Gemini): mesma lógica, monitora uma pasta diferente no Drive
+CONTRATOS
+Email com PDF → Workflow 3 (detecta palavra "Contrato") → Google Drive
+                                                              └─ Workflow 1 (GPT-5-mini) → Supabase contratos
+                                                              └─ Workflow 2 (Gemini)     → Supabase contratos
+
+PROCESSOS TRABALHISTAS
+Email do cliente → Workflow Processos → Switch (tipo de email)
+                                            └─ Novo Caso → Drive + Gemini → Supabase processos
 ```
 
-O Workflow 3 é a **porta de entrada**: transforma emails em arquivos no Drive. Os Workflows 1 e 2 são os **motores de análise**: leem os PDFs, extraem os dados com IA e gravam na tabela `contratos` do Supabase.
+## Workflow de Processos Trabalhistas
 
----
-
-## Workflow 3: Disparo por Email com Palavra-Chave
-
-Este workflow é o ponto de entrada do pipeline. Ele monitora a caixa de entrada do Gmail, identifica emails com contratos em anexo e os envia automaticamente para o Google Drive, de onde o Workflow 1 os processa.
+Fluxo integrado que captura emails de clientes solicitando abertura de processo trabalhista, organiza os documentos no Drive, notifica o cliente e salva os dados no Supabase.
 
 ### Fluxo
 
 ```
-Gmail Trigger (polling a cada minuto)
-   └─ Filtro: Subject contém "Contrato"?
-       └─ Gmail get: baixa a mensagem com anexos
-           └─ Set: conta quantos anexos binários existem (Validador_de_doc)
-               └─ If: Validador_de_doc == 1?
-                   ├─ true → Google Drive: upload para "Contratos Recebidos"
-                   └─ false → No Operation (ignora emails sem anexo)
+Gmail Trigger
+   └─ Switch (Rules)
+       ├─ Novo Caso      → Pega dados e extrai PDF → Edit Fields → Create folder (Drive)
+       │                                                               └─ Share folder
+       │                                                                   └─ Send a message (confirmação ao cliente)
+       │                                                                       └─ Mensagem ao Gemini
+       │                                                                           └─ Formata resposta da IA
+       │                                                                               └─ HTTP Request → Supabase processos
+       ├─ Primeiro Contato → (desativado)
+       └─ Sem Automação    → (desativado)
 ```
 
 ### Detalhes de cada nó
 
-**Recebe email (Gmail Trigger)**
-Polling a cada minuto na conta OAuth2 "Advogado". Retorna todos os emails novos sem filtro inicial.
+**Gmail Trigger**
+Monitora a caixa de entrada com polling contínuo. Captura novos emails automaticamente.
 
-**Filtra Para palavra chave no titulo**
-Nó Filter que verifica se o campo `Subject` do email contém a string `"Contrato"` (case sensitive). Apenas emails que passam seguem adiante.
+**Switch (mode: Rules)**
+Classifica o email em três categorias:
+- **Novo Caso**: email de cliente pedindo abertura de processo. Segue para o fluxo completo.
+- **Primeiro Contato**: email inicial de apresentação. Nó desativado (sem ação configurada).
+- **Sem Automação**: email que não requer resposta automática. Nó desativado.
 
 **Pega dados do email e extrai o PDF**
-Nó Gmail `get:message` que baixa a mensagem completa, com a opção `downloadAttachments: true`. O nome do campo binário gerado usa o `id` do email como prefixo.
+Nó Gmail `get:message` que baixa a mensagem completa com os anexos. Extrai o conteúdo do PDF anexado para análise.
 
-**Váriável para Validar se tem DOC**
-Nó Set que cria o campo `Validador_de_doc = Object.keys($binary).length`. Isso conta quantos arquivos binários (anexos) foram baixados.
+**Edit Fields**
+Prepara e formata os campos do email (remetente, assunto, conteúdo) para os próximos nós.
 
-**Condicional se não houver doc**
-Nó If que compara `Validador_de_doc === 1`. Se verdadeiro, o email tem exatamente um anexo e o fluxo segue para o upload. Se falso (zero ou múltiplos anexos), cai no "No Operation".
+**Create folder (Google Drive)**
+Cria uma pasta individual no Google Drive para o caso. O nome da pasta é derivado dos dados do email.
 
-**Upload de documento (Google Drive)**
-Faz o upload do arquivo para a pasta **"Contratos Recebidos"** (ID: `1IRp02lUejjxDEKjaRQlgfrciJzXF0Gwb`) no Google Drive da conta "Advogado". Ao chegar nessa pasta, o **Workflow 1** é acionado automaticamente pelo seu Google Drive Trigger.
+**Share folder (Google Drive)**
+Compartilha a pasta criada. O link da pasta fica disponível para ser incluído na resposta ao cliente.
 
-**No Operation, do nothing**
-Encerra o fluxo silenciosamente quando o email não tem anexo ou tem mais de um.
+**Send a message (Gmail)**
+Envia um email de confirmação ao remetente informando que o caso foi recebido. Executado antes da análise de IA para resposta imediata ao cliente.
 
-### Conexão com os outros workflows
-
-Depois que o PDF chega na pasta "Contratos Recebidos" do Google Drive, o Workflow 1 (GPT-5-mini) detecta o novo arquivo e inicia a análise de IA automaticamente. O Workflow 2 (Gemini) monitora uma pasta diferente ("Hackaton") e não é alimentado por este workflow.
-
----
-
-## Workflow 1: JuriTrack - Leitura de Contratos (GPT-5-mini)
-
-### Fluxo
-
-```
-Google Drive Trigger — pasta "Contratos Recebidos" (polling a cada minuto)
-   └─ Download file
-       └─ Extract from File (PDF)
-           └─ Message a model (GPT-5-mini)
-               └─ Code in JavaScript (normalização completa)
-                   └─ HTTP Request → Supabase REST API
-```
-
-### Detalhes de cada nó
-
-**Google Drive Trigger**
-Monitora a pasta **"Contratos Recebidos"** com polling a cada minuto. Usa autenticação OAuth2 com o Google Drive.
-
-**Download file**
-Baixa o PDF usando o `id` retornado pelo trigger.
-
-**Extract from File**
-Extrai o texto bruto do PDF.
-
-**Message a model (GPT-5-mini)**
-Envia o texto para o modelo com o prompt estruturado. O modelo retorna JSON com os campos do contrato.
-
-**Code in JavaScript**
-Nó com lógica robusta de normalização:
-- Extrai o texto da IA em diferentes formatos de resposta possíveis
-- Remove markdown caso o modelo retorne blocos de código por engano
-- Normaliza datas para `DD/MM/AAAA` (aceita ISO, com traço ou barra)
-- Substitui campos vazios, "não encontrado" e "null" por `null`
-- Garante que campos de lista sejam arrays e campos de mapa sejam objetos
-- Define campos fixos: `user_id`, `origem_documento: "Upload manual via Google Drive"`, `remetente_email: "Upload manual"`, `status_manual: "Ativo"`
-
-**HTTP Request**
-POST para a API REST do Supabase, tabela `contratos`.
-
----
-
-## Workflow 2: Extração de Contrato (Gemini)
-
-### Fluxo
-
-```
-Google Drive Trigger — pasta "Hackaton" (polling a cada minuto)
-   └─ Download
-       └─ Transforma o pdf em json (Extract From PDF)
-           └─ Mensagem ao Gemini (gemini-3.1-flash-lite)
-               └─ Formata a resposta da IA
-                   └─ HTTP Request → Supabase REST API
-```
-
-### Detalhes de cada nó
-
-**Google Drive Trigger**
-Monitora a pasta **"Hackaton"** com polling a cada minuto. Usa uma conta OAuth2 diferente do Workflow 1.
-
-**Download**
-Baixa o PDF usando o `id` retornado pelo trigger.
-
-**Transforma o pdf em json**
-Extrai o texto bruto do PDF.
-
-**Mensagem ao Gemini (gemini-3.1-flash-lite)**
-Envia o texto para o Gemini com o mesmo prompt estruturado do Workflow 1. Usa autenticação via Google Gemini (PaLM) API.
+**Mensagem ao Gemini**
+Envia o conteúdo extraído do email/PDF para o modelo Gemini com o prompt estruturado. Retorna JSON com os dados do processo.
 
 **Formata a resposta da IA**
-Nó JavaScript simples que extrai e faz o parse do JSON da resposta do Gemini:
+Nó JavaScript que faz o parse do JSON retornado pelo Gemini e prepara o payload para o Supabase:
 ```js
-const texto = $input.first().json.content.parts[0].text;
-const dados = JSON.parse(texto);
-return [{ json: dados }];
+const texto = $input.first().json.text ??
+              $input.first().json.content?.parts?.[0]?.text ??
+              $input.first().json.message?.content ?? ''
+const limpo = texto.replace(/```json/gi, '').replace(/```/g, '').trim()
+const dados = JSON.parse(limpo)
+return [{ json: dados }]
 ```
-Não tem normalização de datas nem campos fixos como `user_id`.
 
 **HTTP Request**
-POST para a API REST do Supabase, tabela `contratos`.
+POST para `https://dmafrzaahrsrzgftyoqq.supabase.co/rest/v1/processos` com o payload JSON formatado.
 
----
-
-## Comparativo entre os três workflows
-
-| Característica | Workflow 3 (Email) | Workflow 1 (GPT) | Workflow 2 (Gemini) |
-|---|---|---|---|
-| Gatilho | Gmail Trigger | Google Drive Trigger | Google Drive Trigger |
-| Função | Ingestão (email → Drive) | Análise de IA | Análise de IA |
-| Filtro de entrada | Palavra "Contrato" no assunto | Pasta "Contratos Recebidos" | Pasta "Hackaton" |
-| Modelo de IA | Nenhum | GPT-5-mini | gemini-3.1-flash-lite |
-| Normalização de datas | N/A | Sim (DD/MM/AAAA) | Não |
-| Campos fixos (user_id, status) | N/A | Sim | Não |
-| Destino final | Google Drive | Supabase `contratos` | Supabase `contratos` |
-
----
-
-## Prompt compartilhado pelos dois workflows
-
-Ambos os workflows usam o mesmo prompt para a IA:
-
-- Responder somente com JSON válido, sem markdown
-- Usar `null` quando uma informação não existir no documento
-- Datas no formato `DD/MM/AAAA`
-- `prioridade_revisao` somente como `"Baixa"`, `"Média"` ou `"Alta"`
-- Aumentar a prioridade se houver multa, vencimento próximo, risco jurídico ou cláusula sensível
-
-### Campos extraídos pela IA
+### Campos extraídos pela IA para processos
 
 | Campo | Tipo |
 |---|---|
@@ -174,26 +85,124 @@ Ambos os workflows usam o mesmo prompt para a IA:
 | titulo_contrato | string |
 | categoria | string |
 | resumo | string |
-| data_assinatura | string (DD/MM/AAAA) |
-| data_inicio_vigencia | string (DD/MM/AAAA) |
-| data_fim_vigencia | string (DD/MM/AAAA) |
-| partes_envolvidas | array (nome, cnpj, cpf, papel) |
-| valor_total | string |
+| parte_1_nome | string |
+| parte_1_papel | string |
+| parte_2_nome | string |
+| parte_2_papel | string |
+| valor_total | number |
 | valor_mensal | string |
 | forma_pagamento | string |
-| prazos_importantes | array |
-| obrigacoes | array |
-| clausulas_relevantes | objeto (rescisao, multa, confidencialidade, renovacao, foro, lgpd) |
-| pontos_de_atencao | array |
-| alertas_recomendados | array |
-| prioridade_revisao | string |
+| prazos_importantes | array ou string |
+| obrigacoes | array ou string |
+| clausula_rescisao | string |
+| clausula_multa | string |
+| clausula_confidencialidade | string |
+| clausula_renovacao | string |
+| clausula_foro | string |
+| clausula_lgpd | string |
+| pontos_de_atencao | array ou string |
+| alertas_recomendados | array ou string |
+| prioridade_revisao | string (alta, media, baixa) |
 
----
+## Workflow 3: Disparo por Email com Palavra-Chave (Contratos)
+
+Ponto de entrada do pipeline de contratos. Monitora o Gmail, identifica emails com contratos em anexo e envia para o Google Drive.
+
+### Fluxo
+
+```
+Gmail Trigger (polling a cada minuto)
+   └─ Filtro: Subject contém "Contrato"?
+       └─ Gmail get: baixa a mensagem com anexos
+           └─ Set: conta anexos (Validador_de_doc)
+               └─ If: Validador_de_doc == 1?
+                   ├─ true  → Google Drive: upload para "Contratos Recebidos"
+                   └─ false → No Operation
+```
+
+### Detalhes de cada nó
+
+**Gmail Trigger**
+Polling a cada minuto na conta OAuth2. Retorna todos os emails novos.
+
+**Filtro por palavra-chave**
+Nó Filter que verifica se o `Subject` contém `"Contrato"`. Apenas emails que passam seguem adiante.
+
+**Pega dados do email e extrai o PDF**
+Nó Gmail `get:message` com `downloadAttachments: true`.
+
+**Validador de documento**
+Nó Set que cria `Validador_de_doc = Object.keys($binary).length`. Conta os anexos binários.
+
+**Condicional**
+Nó If que verifica `Validador_de_doc === 1`. Exige exatamente um anexo.
+
+**Upload de documento**
+Faz upload do PDF para a pasta **"Contratos Recebidos"** no Google Drive. Ao chegar nessa pasta, o Workflow 1 é acionado automaticamente.
+
+## Workflow 1: Leitura de Contratos (GPT-5-mini)
+
+### Fluxo
+
+```
+Google Drive Trigger — pasta "Contratos Recebidos"
+   └─ Download file
+       └─ Extract from File (PDF)
+           └─ Message a model (GPT-5-mini)
+               └─ Code in JavaScript (normalização)
+                   └─ HTTP Request → Supabase contratos
+```
+
+**Code in JavaScript**
+Normalização completa:
+- Remove markdown caso o modelo retorne blocos de código
+- Normaliza datas para `DD/MM/AAAA`
+- Substitui campos vazios e "null" por `null`
+- Garante que listas sejam arrays e mapas sejam objetos
+- Define campos fixos: `user_id`, `origem_documento: "Upload manual via Google Drive"`, `remetente_email: "Upload manual"`, `status_manual: "Ativo"`
+
+## Workflow 2: Extração de Contratos (Gemini)
+
+### Fluxo
+
+```
+Google Drive Trigger — pasta "Hackaton"
+   └─ Download
+       └─ Extract From PDF
+           └─ Mensagem ao Gemini (gemini-3.1-flash-lite)
+               └─ Formata a resposta da IA
+                   └─ HTTP Request → Supabase contratos
+```
+
+Não tem normalização de datas nem campos fixos como `user_id`.
+
+## Comparativo dos Workflows
+
+| Característica | Workflow Processos | Workflow 3 | Workflow 1 (GPT) | Workflow 2 (Gemini) |
+|---|---|---|---|---|
+| Gatilho | Gmail Trigger | Gmail Trigger | Drive Trigger | Drive Trigger |
+| Função | Processos trabalhistas | Ingestão (email → Drive) | Análise de contratos | Análise de contratos |
+| Filtro de entrada | Switch (tipo de email) | Palavra "Contrato" no assunto | Pasta "Contratos Recebidos" | Pasta "Hackaton" |
+| Modelo de IA | Gemini | Nenhum | GPT-5-mini | gemini-3.1-flash-lite |
+| Cria pasta no Drive | Sim | Não | Não | Não |
+| Envia email de confirmação | Sim | Não | Não | Não |
+| Normalização de datas | Não | N/A | Sim | Não |
+| Destino final | Supabase `processos` | Google Drive | Supabase `contratos` | Supabase `contratos` |
+
+## Prompt para Análise de Contratos (Workflows 1 e 2)
+
+- Responder somente com JSON válido, sem markdown
+- Usar `null` quando uma informação não existir no documento
+- Datas no formato `DD/MM/AAAA`
+- `prioridade_revisao` somente como `"Baixa"`, `"Média"` ou `"Alta"`
+- Aumentar a prioridade se houver multa, vencimento próximo, risco jurídico ou cláusula sensível
 
 ## Observações
 
 O n8n utilizado é o **n8n Cloud** (beccadias.app.n8n.cloud). O plano atual tem limite de 1.000 execuções mensais.
 
-O `user_id` está fixo no JavaScript do Workflow 1. O Workflow 2 não define `user_id`, o que pode causar erros de RLS no Supabase dependendo da política configurada.
+O `user_id` está fixo no JavaScript do Workflow 1. O Workflow 2 não define `user_id`, o que pode causar erros de RLS dependendo da política configurada.
 
-Contratos enviados pelo Upload Manual do frontend não passam por nenhum dos dois workflows e não recebem análise de IA.
+O Workflow de Processos não define `user_id` pois a tabela `processos` não possui essa coluna. A autenticação no HTTP Request usa a chave `service_role` para bypass de RLS.
+
+As credenciais Google (OAuth2 Gmail e Drive) precisam ser configuradas individualmente para cada nó com triângulo de aviso no canvas do n8n.
