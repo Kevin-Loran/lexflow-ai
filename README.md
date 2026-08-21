@@ -7,6 +7,11 @@ Plataforma SaaS jurídica que automatiza a gestão de contratos e processos trab
 
 O JuriTech resolve um problema comum em escritórios de advocacia: a gestão manual e descentralizada de contratos e processos. Com o sistema, contratos em PDF são captados automaticamente, analisados por IA e salvos no banco de dados com todos os campos extraídos (partes, valores, prazos, cláusulas, alertas). O advogado acessa tudo por um painel limpo, com filtros, busca e alertas de vencimento.
 
+## Como acessar:
+ Utilize essas credenciais:
+  email: advogado.profissionalteste@gmail.com
+  senha: teste123
+
 ## Funcionalidades
 
 **Contratos**
