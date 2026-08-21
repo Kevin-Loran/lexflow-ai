@@ -15,7 +15,7 @@ O JuriTech resolve um problema comum em escritórios de advocacia: a gestão man
   
   `email: advogado.profissionalteste@gmail.com`
   
-  `senha: teste123`
+  `senha: Teste123`
 
 ## Funcionalidades
 
