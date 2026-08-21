@@ -9,8 +9,9 @@ O JuriTech resolve um problema comum em escritórios de advocacia: a gestão man
 
 ## Como acessar:
  Utilize essas credenciais:
-  email: advogado.profissionalteste@gmail.com
-  senha: teste123
+ 
+  `email: advogado.profissionalteste@gmail.com
+  senha: teste123`
 
 ## Funcionalidades
 
